@@ -22,25 +22,11 @@ namespace TaskManager
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private ObservableCollection<ProcessClass> processes = new ObservableCollection<ProcessClass>();
 		public MainWindow()
 		{
 			InitializeComponent();
 
 			var processes = Process.GetProcesses();
-			//Process[] processList = Process.GetProcesses();
-			//foreach (var process in processList)
-			//{
-			//	processes.Add(new ProcessClass
-			//	{
-			//		Id = process.Id,
-			//		Name = process.ProcessName,
-			//		Priority = process.BasePriority,
-			//		CurrentMemoryUsage = process.WorkingSet64,
-			//		PeakMemoryUsage = process.PeakWorkingSet64,
-			//	});
-			//}
-
 			taskManager.ItemsSource = processes;
 		}
 
@@ -49,22 +35,27 @@ namespace TaskManager
 			var currentRow = (DataGridRow)taskManager
 				.ItemContainerGenerator
 				.ContainerFromIndex(taskManager.SelectedIndex);
-
-			if (e.Key == Key.Delete && !currentRow.IsEditing)
+			try
 			{
-				var selectedItem = taskManager.SelectedItem;
-				;
-				if (selectedItem != null)
+				if (e.Key == Key.Delete && !currentRow.IsEditing)
 				{
-					using (var process = selectedItem as Process)
+					var selectedItem = taskManager.SelectedItem;
+					if (selectedItem != null)
 					{
-						process.Kill();
-					}
+						using (var process = selectedItem as Process)
+						{
+							process.Kill();
+						}
+						var updatedProcesses = Process.GetProcesses();
+						taskManager.ItemsSource = updatedProcesses;
 
-					var processes = Process.GetProcesses();
-					taskManager.ItemsSource = processes;
-					MessageBox.Show("Процесс завершен");
+						MessageBox.Show("Задача снята");
+					}
 				}
+			}
+			catch
+			{
+				MessageBox.Show("Ошибка! Данную задачу невозможно завершить");
 			}
 		}
 	}
